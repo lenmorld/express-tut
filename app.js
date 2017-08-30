@@ -1,6 +1,10 @@
 var express = require('express');
 var app = express();
 
+var bodyParser = require('body-parser');
+var parseUrlEncoded = bodyParser.urlencoded({ extended: false });		// use native Node querystring library
+// parseUrlEncoded is now a middleware function
+
 
 // must put ours before the real ones, make sure ours has next()
 var logger = require('./mymiddleware');
@@ -24,16 +28,6 @@ app.get('/', function(request, response) {
 // URL
 // limit number of foods returned
 
-// /foods?limit=2
-app.get('/foods', function(request, response) {
-    var foods = ['banana', 'fries', 'bbq'];
-    if (request.query.limit >= 0) {
-		response.json(foods.slice(0, request.query.limit))
-	} else {
-        response.send(foods);
-    }
-});
-
 var foods = {
 	'banana': 'yellow and long',
 	'fries': 'Greasy and crispy',
@@ -48,6 +42,16 @@ var drinks = {
 };
 
 
+app.get('/foods2', function(request, response) {
+    var foods = ['banana', 'fries', 'bbq'];
+    if (request.query.limit >= 0) {
+        response.json(foods.slice(0, request.query.limit))
+    } else {
+        response.send(foods);
+    }
+});
+
+
 // JSON object route
 // Object.keys()
 app.get('/foods', function(request, response) {
@@ -60,54 +64,7 @@ app.get('/foods_complete', function(request, response) {
 });
 
 
-// Dynamic Routes (all other are static)
-// foods/banana
-// app.get('/foods/:name', function (request, response) {
-// 	var description = foods[request.params.name];	// undefined if not there
-// 	if (!description) {
-// 		response.status(404)
-// 			.json('No desc found for ' + request.params.name);
-// 	} else {
-//         response.json(description);		// defaults to 200 Success
-//     }
-// });
-
-
-// improvement
-
-// app.get('/foods/:name', function (request, response) {
-//
-// 	// normalize for case-insensitive
-// 	var name = request.params.name;
-// 	var food = name.toLowerCase();
-//     var description = foods[food];	// undefined if not there
-//
-// 	if (!description) {
-// 		response.status(404)
-// 			.json('No desc found for ' + request.params.name);
-// 	} else {
-// 		response.json(description);		// defaults to 200 Success
-// 	}
-// });
-//
-// app.get('/drinks/:name', function (request, response) {
-//
-//     // normalize for case-insensitive
-//     var name = request.params.name;
-//     var drink = name.toLowerCase();
-//     var description = drinks[drink];	// undefined if not there
-//
-//     if (!description) {
-//         response.status(404)
-//             .json('No desc found for ' + request.params.name);
-//     } else {
-//         response.json(description);		// defaults to 200 Success
-//     }
-// });
-
-
 // improvement2
-
 // intercept param then attach ot to request obj which is accessible throughout
 app.param('name', function (request, response, next) {
     // normalize for case-insensitive
@@ -125,8 +82,6 @@ app.get('/foods/:name', function (request, response) {
 		response.status(404)
 			.json('No desc found for ' + request.params.name);
 	} else {
-
-		response.jso
 		response.json(description);		// defaults to 200 Success
 	}
 });
@@ -142,6 +97,23 @@ app.get('/drinks/:name', function (request, response) {
 });
 
 
+//POST
+app.post('/foods', parseUrlEncoded, function (request, response) {
+	var newFood = request.body;
+	foods[newFood.name] = newFood.description;
+
+	response.status(201)				// 201 CREATED
+		.json(newFood.name);
+});
+
+
+//DELETE
+app.delete('/foods/:name', function (request, response) {
+	console.log(request.paramName);
+	delete foods[request.paramName];				// could also be request.params.name
+	console.log(foods);
+	response.sendStatus(200);
+});
 
 app.listen(3001, function() {
 	console.log('Listening at 3001');

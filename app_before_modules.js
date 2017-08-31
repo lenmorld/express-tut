@@ -62,7 +62,8 @@ app.param('name', function (request, response, next) {
 
 // app.get('/foods/:name', function (request, response) {
 
-app.get('/foods/:name', function (request, response) {
+app.route('/foods/:name')
+	.get(function (request, response) {
 		var description = foods[request.paramName];	// undefined if not there
 		if (!description) {
 			response.status(404)
@@ -71,7 +72,7 @@ app.get('/foods/:name', function (request, response) {
 			response.json(description);		// defaults to 200 Success
 		}
 	})
-	.delete('/foods/:name', function (request, response) {
+	.delete(function (request, response) {
 		console.log(request.paramName);
 		delete foods[request.paramName];				// could also be request.params.name
 		console.log(foods);
@@ -80,15 +81,15 @@ app.get('/foods/:name', function (request, response) {
 
 // ### we can also do chaining ###
 
-
-app.get('/drinks/:name', function (request, response) {
-    var description = drinks[request.paramName];	// undefined if not there
-    if (!description) {
-        response.status(404)
-            .json('No desc found for ' + request.params.name);
-    } else {
-        response.json(description);		// defaults to 200 Success
-    }
+app.route('/drinks/:name')
+	.get(function (request, response) {
+		var description = drinks[request.paramName];	// undefined if not there
+		if (!description) {
+			response.status(404)
+				.json('No desc found for ' + request.params.name);
+		} else {
+			response.json(description);		// defaults to 200 Success
+		}
 });
 
 //POST
